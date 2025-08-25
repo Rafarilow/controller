@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Adicionar Despesa</h2>
+<form action="{{ url_for('adicionar') }}" method="post">
+  Data: <input type="date" name="data"><br><br>
+  Categoria:
+  <select name="categoria">
+    {% for cat in categorias %}
+    <option value="{{ cat }}">{{ cat }}</option>
+    {% endfor %}
+  </select><br><br>
+  Descrição: <input type="text" name="descricao"><br><br>
+  Valor: <input type="number" step="0.01" name="valor"><br><br>
+  <button type="submit">Adicionar</button>
+</form>
+
+<h2>Lista de Despesas</h2>
+<table border="1">
+  <tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th></tr>
+  {% for d in despesas %}
+  <tr>
+    <td>{{ d['data'] }}</td>
+    <td>{{ d['categoria'] }}</td>
+    <td>{{ d['descricao'] }}</td>
+    <td>R$ {{ d['valor'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

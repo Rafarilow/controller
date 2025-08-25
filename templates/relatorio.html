@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Relatório</h2>
+<p><b>Total geral:</b> R$ {{ "%.2f"|format(total_geral) }}</p>
+
+<table border="1">
+  <tr><th>Categoria</th><th>Valor (R$)</th></tr>
+  {% for cat, val in totais.items() %}
+  <tr>
+    <td>{{ cat }}</td>
+    <td>R$ {{ "%.2f"|format(val) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h3>Gráficos</h3>
+<img src="{{ url_for('static', filename='gastos_por_categoria.png') }}" width="400">
+<img src="{{ url_for('static', filename='participacao_porcentual.png') }}" width="400">
+{% endblock %}
