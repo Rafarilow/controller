@@ -1,40 +1,128 @@
+/* ====== Layout geral ====== */
 body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  background: #f4f6f8;
-  color: #333;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9fbfd;
+    color: #333;
+    margin: 0;
+    padding: 0;
 }
 
+/* ====== Header ====== */
 header {
-  margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.05);
 }
 
+header .logo-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+header img {
+    height: 70px;
+    width: auto;
+}
+
+header h1 {
+    font-size: 1.4rem;
+    margin: 0;
+    color: #2c3e50;
+}
+
+/* ====== Navbar ====== */
 nav a {
-  margin-right: 10px;
-  text-decoration: none;
-  color: #007bff;
+    margin-left: 15px;
+    text-decoration: none;
+    font-weight: 500;
+    color: #2c3e50;
+    transition: color 0.2s;
 }
 
-table {
-  border-collapse: collapse;
-  margin-top: 10px;
-  width: 100%;
-  background: white;
+nav a:hover {
+    color: #04730f;
 }
 
-td, th {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
+/* ====== Seção Principal ====== */
+main {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
+}
+
+/* ====== Formulário ====== */
+form {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 15px;
+    align-items: center;
+}
+
+form label {
+    font-weight: 600;
+    color: #444;
+}
+
+form input, 
+form select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+    transition: 0.2s;
+}
+
+form input:focus,
+form select:focus {
+    border-color: #04730f;
+    box-shadow: 0 0 4px rgba(0,123,255,0.2);
 }
 
 button {
-  background: #007bff;
-  color: white;
-  padding: 6px 12px;
-  border: none;
-  cursor: pointer;
+    grid-column: 2;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    background: #04730f;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
 button:hover {
-  background: #0056b3;
+    background: #014b08;
+}
+
+/* ====== Tabela ====== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table th {
+    background: #04730f;
+    color: #fff;
+    text-align: left;
+    padding: 12px;
+}
+
+table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+table tr:nth-child(even) {
+    background: #f8f9fa;
 }

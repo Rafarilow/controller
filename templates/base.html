@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controller</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/icon.png') }}">
 
 </head>
 <body>
     <header>
-        <h1>💸 Controle de Despesas</h1>
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="logo">
         <nav>
             <a href="{{ url_for('index') }}">Início</a> |
             <a href="{{ url_for('relatorio') }}">Relatório</a>
