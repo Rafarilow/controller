@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for
 import csv, os
 from datetime import datetime
 from collections import defaultdict
+
+import matplotlib
+matplotlib.use("Agg")  # <<< força backend não-interativo (resolve erro no Mac)
 import matplotlib.pyplot as plt
 
 app = Flask(__name__)
@@ -16,20 +19,25 @@ def garantir_arquivo_csv():
             w = csv.writer(f)
             w.writerow(["data", "categoria", "descricao", "valor"])
 
+
 def ler_despesas():
     garantir_arquivo_csv()
     despesas = []
     with open(ARQUIVO_CSV, "r", newline="", encoding="utf-8") as f:
         r = csv.DictReader(f)
         for row in r:
+            if "valor" in row and row["valor"]:
+                row["valor"] = float(row["valor"])
             despesas.append(row)
     return despesas
+
 
 def salvar_despesa(data, categoria, descricao, valor):
     garantir_arquivo_csv()
     with open(ARQUIVO_CSV, "a", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow([data, categoria, descricao, valor])
+
 
 def gerar_graficos():
     despesas = ler_despesas()
@@ -46,10 +54,10 @@ def gerar_graficos():
 
     if not categorias:
         return
-    
 
+    # Gráfico de barras
     plt.figure()
-    plt.bar(categorias, valores)
+    plt.bar(categorias, valores, color="skyblue", edgecolor="black")
     plt.title("Gastos por Categoria (R$)")
     plt.xlabel("Categoria")
     plt.ylabel("Valor (R$)")
@@ -57,6 +65,7 @@ def gerar_graficos():
     plt.savefig("static/gastos_por_categoria.png")
     plt.close()
 
+    # Gráfico de pizza
     plt.figure()
     plt.pie(valores, labels=categorias, autopct="%1.1f%%", startangle=90)
     plt.title("Participação por Categoria (%)")
@@ -64,12 +73,13 @@ def gerar_graficos():
     plt.savefig("static/participacao_porcentual.png")
     plt.close()
 
-##Front-end routes:
 
+# ----------------- Rotas -----------------
 @app.route("/")
 def index():
     despesas = ler_despesas()
     return render_template("index.html", despesas=despesas, categorias=CATEGORIAS)
+
 
 @app.route("/adicionar", methods=["POST"])
 def adicionar():
@@ -93,7 +103,6 @@ def relatorio():
         totais[d["categoria"]] += v
         total_geral += v
     return render_template("relatorio.html", totais=totais, total_geral=total_geral)
-
 
 
 if __name__ == "__main__":

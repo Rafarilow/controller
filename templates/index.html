@@ -1,29 +1,130 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Adicionar Despesa</h2>
-<form action="{{ url_for('adicionar') }}" method="post">
-  Data: <input type="date" name="data"><br><br>
-  Categoria:
-  <select name="categoria">
-    {% for cat in categorias %}
-    <option value="{{ cat }}">{{ cat }}</option>
-    {% endfor %}
-  </select><br><br>
-  Descrição: <input type="text" name="descricao"><br><br>
-  Valor: <input type="number" step="0.01" name="valor"><br><br>
-  <button type="submit">Adicionar</button>
-</form>
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <p>Controle suas despesas de forma inteligente</p>
+</div>
 
-<h2>Lista de Despesas</h2>
-<table border="1">
-  <tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th></tr>
-  {% for d in despesas %}
-  <tr>
-    <td>{{ d['data'] }}</td>
-    <td>{{ d['categoria'] }}</td>
-    <td>{{ d['descricao'] }}</td>
-    <td>R$ {{ d['valor'] }}</td>
-  </tr>
-  {% endfor %}
-</table>
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+            <h3>Total do Mês</h3>
+            <p class="stat-value">R$ {{ "%.2f"|format(total_geral or 0) }}</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div class="stat-content">
+            <h3>Total de Despesas</h3>
+            <p class="stat-value">{{ despesas|length }}</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+            <h3>Categorias</h3>
+            <p class="stat-value">{{ categorias|length }}</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">💳</div>
+        <div class="stat-content">
+            <h3>Última Despesa</h3>
+            <p class="stat-value">
+                {% if despesas %}
+                    R$ {{ "%.2f"|format(despesas[-1]['valor']) }}
+                {% else %}
+                    R$ 0,00
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Add Expense Form -->
+<div class="form-section">
+    <div class="section-header">
+        <h2>Adicionar Nova Despesa</h2>
+    </div>
+    
+    <form action="{{ url_for('adicionar') }}" method="post" class="expense-form">
+        <div class="form-group">
+            <label for="data">Data</label>
+            <input type="date" id="data" name="data" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="categoria">Categoria</label>
+            <select id="categoria" name="categoria" required>
+                <option value="">Selecione uma categoria</option>
+                {% for cat in categorias %}
+                <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="descricao">Descrição</label>
+            <input type="text" id="descricao" name="descricao" placeholder="Ex: Compras no supermercado" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="valor">Valor (R$)</label>
+            <input type="number" id="valor" name="valor" step="0.01" min="0" placeholder="0,00" required>
+        </div>
+        
+        <button type="submit" class="btn-primary">
+            <span>➕</span>
+            Adicionar Despesa
+        </button>
+    </form>
+</div>
+
+<!-- Expenses List -->
+<div class="table-section">
+    <div class="section-header">
+        <h2>Lista de Despesas</h2>
+        <div class="table-info">
+            <span>{{ despesas|length }} despesa{{ 's' if despesas|length != 1 }}</span>
+        </div>
+    </div>
+    
+    {% if despesas %}
+    <div class="table-container">
+        <table class="expense-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Categoria</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in despesas %}
+                <tr>
+                    <td>{{ d['data'] }}</td>
+                    <td>
+                        <span class="category-badge">{{ d['categoria'] }}</span>
+                    </td>
+                    <td>{{ d['descricao'] }}</td>
+                    <td class="value-cell">R$ {{ "%.2f"|format(d['valor']) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h3>Nenhuma despesa cadastrada</h3>
+        <p>Adicione sua primeira despesa usando o formulário acima.</p>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

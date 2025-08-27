@@ -1,19 +1,100 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Relatório</h2>
-<p><b>Total geral:</b> R$ {{ "%.2f"|format(total_geral) }}</p>
+<div class="page-header">
+    <h1>Relatórios</h1>
+    <p>Análise detalhada das suas despesas</p>
+</div>
 
-<table border="1">
-  <tr><th>Categoria</th><th>Valor (R$)</th></tr>
-  {% for cat, val in totais.items() %}
-  <tr>
-    <td>{{ cat }}</td>
-    <td>R$ {{ "%.2f"|format(val) }}</td>
-  </tr>
-  {% endfor %}
-</table>
+<!-- Summary Cards -->
+<div class="summary-grid">
+    <div class="summary-card total-card">
+        <div class="summary-icon">💰</div>
+        <div class="summary-content">
+            <h3>Total Geral</h3>
+            <p class="summary-value">R$ {{ "%.2f"|format(total_geral) }}</p>
+        </div>
+    </div>
+</div>
 
-<h3>Gráficos</h3>
-<img src="{{ url_for('static', filename='gastos_por_categoria.png') }}" width="400">
-<img src="{{ url_for('static', filename='participacao_porcentual.png') }}" width="400">
+<!-- Category Breakdown -->
+<div class="report-section">
+    <div class="section-header">
+        <h2>Gastos por Categoria</h2>
+    </div>
+    
+    <div class="category-grid">
+        {% for cat, val in totais.items() %}
+        <div class="category-card">
+            <div class="category-info">
+                <h4>{{ cat }}</h4>
+                <p class="category-value">R$ {{ "%.2f"|format(val) }}</p>
+            </div>
+            <div class="category-percentage">
+                {% set percentage = (val / total_geral * 100) if total_geral > 0 else 0 %}
+                <span class="percentage-text">{{ "%.1f"|format(percentage) }}%</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ percentage }}%;"></div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Detailed Table -->
+<div class="table-section">
+    <div class="section-header">
+        <h2>Detalhamento por Categoria</h2>
+    </div>
+    
+    <div class="table-container">
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Categoria</th>
+                    <th>Valor (R$)</th>
+                    <th>Participação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat, val in totais.items() %}
+                <tr>
+                    <td>
+                        <span class="category-badge">{{ cat }}</span>
+                    </td>
+                    <td class="value-cell">R$ {{ "%.2f"|format(val) }}</td>
+                    <td class="percentage-cell">
+                        {% set percentage = (val / total_geral * 100) if total_geral > 0 else 0 %}
+                        {{ "%.1f"|format(percentage) }}%
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="charts-section">
+    <div class="section-header">
+        <h2>Gráficos</h2>
+    </div>
+    
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>Gastos por Categoria</h3>
+            <div class="chart-container">
+                <img src="{{ url_for('static', filename='gastos_por_categoria.png') }}" alt="Gastos por Categoria" class="chart-image">
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <h3>Participação Porcentual</h3>
+            <div class="chart-container">
+                <img src="{{ url_for('static', filename='participacao_porcentual.png') }}" alt="Participação Porcentual" class="chart-image">
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
