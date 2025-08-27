@@ -5,36 +5,72 @@
     <p>Análise detalhada das suas despesas</p>
 </div>
 
-<!-- Summary Cards -->
-<div class="summary-grid">
+
+<div class="summary-section">
     <div class="summary-card total-card">
-        <div class="summary-icon">💰</div>
+        <div class="summary-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+        </div>
         <div class="summary-content">
             <h3>Total Geral</h3>
             <p class="summary-value">R$ {{ "%.2f"|format(total_geral) }}</p>
+            <div class="summary-trend">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M7 17l6-6 6 6M13 11h6v6"/>
+                </svg>
+                <span>Total acumulado</span>
+            </div>
         </div>
+        <div class="summary-decoration"></div>
     </div>
 </div>
 
-<!-- Category Breakdown -->
+
 <div class="report-section">
     <div class="section-header">
-        <h2>Gastos por Categoria</h2>
+        <div class="section-title">
+            <h2>Gastos por Categoria</h2>
+            <p>Análise detalhada da distribuição dos seus gastos</p>
+        </div>
     </div>
     
     <div class="category-grid">
         {% for cat, val in totais.items() %}
         <div class="category-card">
-            <div class="category-info">
+            <div class="category-header">
+                <div class="category-icon">
+                    {% if cat == 'Alimentação' %}
+                        🍽️
+                    {% elif cat == 'Transporte' %}
+                        🚗
+                    {% elif cat == 'Saúde' %}
+                        🏥
+                    {% elif cat == 'Educação' %}
+                        📚
+                    {% elif cat == 'Lazer' %}
+                        🎮
+                    {% elif cat == 'Casa' %}
+                        🏠
+                    {% elif cat == 'Roupas' %}
+                        👕
+                    {% else %}
+                        📦
+                    {% endif %}
+                </div>
                 <h4>{{ cat }}</h4>
-                <p class="category-value">R$ {{ "%.2f"|format(val) }}</p>
             </div>
-            <div class="category-percentage">
+            
+            <div class="category-info">
+                <p class="category-value">R$ {{ "%.2f"|format(val) }}</p>
                 {% set percentage = (val / total_geral * 100) if total_geral > 0 else 0 %}
                 <span class="percentage-text">{{ "%.1f"|format(percentage) }}%</span>
+            </div>
+            
+            <div class="category-progress">
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: {{ percentage }}%;"></div>
-
                 </div>
             </div>
         </div>
@@ -42,31 +78,76 @@
     </div>
 </div>
 
-<!-- Detailed Table -->
+
 <div class="table-section">
     <div class="section-header">
-        <h2>Detalhamento por Categoria</h2>
+        <div class="section-title">
+            <h2>Detalhamento por Categoria</h2>
+            <p>Resumo completo com valores e participação percentual</p>
+        </div>
     </div>
     
     <div class="table-container">
         <table class="report-table">
             <thead>
                 <tr>
-                    <th>Categoria</th>
-                    <th>Valor (R$)</th>
-                    <th>Participação</th>
+                    <th>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Categoria
+                    </th>
+                    <th>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                        Valor (R$)
+                    </th>
+                    <th>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                        </svg>
+                        Participação
+                    </th>
                 </tr>
             </thead>
             <tbody>
                 {% for cat, val in totais.items() %}
                 <tr>
                     <td>
-                        <span class="category-badge">{{ cat }}</span>
+                        <div class="category-cell">
+                            <span class="category-icon-small">
+                                {% if cat == 'Alimentação' %}
+                                    🍽️
+                                {% elif cat == 'Transporte' %}
+                                    🚗
+                                {% elif cat == 'Saúde' %}
+                                    🏥
+                                {% elif cat == 'Educação' %}
+                                    📚
+                                {% elif cat == 'Lazer' %}
+                                    🎮
+                                {% elif cat == 'Casa' %}
+                                    🏠
+                                {% elif cat == 'Roupas' %}
+                                    👕
+                                {% else %}
+                                    📦
+                                {% endif %}
+                            </span>
+                            <span class="category-name">{{ cat }}</span>
+                        </div>
                     </td>
                     <td class="value-cell">R$ {{ "%.2f"|format(val) }}</td>
                     <td class="percentage-cell">
                         {% set percentage = (val / total_geral * 100) if total_geral > 0 else 0 %}
-                        {{ "%.1f"|format(percentage) }}%
+                        <div class="percentage-container">
+                            <span class="percentage-value">{{ "%.1f"|format(percentage) }}%</span>
+                            <div class="mini-progress">
+                                <div class="mini-progress-fill" style="width: {{ percentage }}%;"></div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -75,24 +156,55 @@
     </div>
 </div>
 
-<!-- Charts Section -->
+
 <div class="charts-section">
     <div class="section-header">
-        <h2>Gráficos</h2>
+        <div class="section-title">
+            <h2>Gráficos e Visualizações</h2>
+            <p>Representação visual dos seus dados financeiros</p>
+        </div>
     </div>
     
     <div class="charts-grid">
         <div class="chart-card">
-            <h3>Gastos por Categoria</h3>
+            <div class="chart-header">
+                <h3>Gastos por Categoria</h3>
+                <div class="chart-actions">
+                    <button class="chart-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
             <div class="chart-container">
-                <img src="{{ url_for('static', filename='gastos_por_categoria.png') }}" alt="Gastos por Categoria" class="chart-image">
+                <img src="{{ url_for('static', filename='gastos_por_categoria.png') }}" 
+                     alt="Gastos por Categoria" 
+                     class="chart-image"
+                     onerror="this.parentElement.innerHTML='<div class=\'chart-placeholder\'><svg width=\'64\' height=\'64\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\'><path d=\'M3 3v18h18\'/><path d=\'M18.7 8l-5.1 5.2-2.8-2.7L7 14.3\'/></svg><p>Gráfico não disponível</p></div>'">
             </div>
         </div>
         
         <div class="chart-card">
-            <h3>Participação Porcentual</h3>
+            <div class="chart-header">
+                <h3>Participação Porcentual</h3>
+                <div class="chart-actions">
+                    <button class="chart-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
             <div class="chart-container">
-                <img src="{{ url_for('static', filename='participacao_porcentual.png') }}" alt="Participação Porcentual" class="chart-image">
+                <img src="{{ url_for('static', filename='participacao_porcentual.png') }}" 
+                     alt="Participação Porcentual" 
+                     class="chart-image"
+                     onerror="this.parentElement.innerHTML='<div class=\'chart-placeholder\'><svg width=\'64\' height=\'64\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\'><circle cx=\'12\' cy=\'12\' r=\'10\'/><path d=\'M12 6v6l4 2\'/></svg><p>Gráfico não disponível</p></div>'">
             </div>
         </div>
     </div>

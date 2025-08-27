@@ -5,34 +5,71 @@
     <p>Controle suas despesas de forma inteligente</p>
 </div>
 
-<!-- Statistics Cards -->
+
 <div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon">💰</div>
+    <div class="stat-card primary">
+        <div class="stat-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+        </div>
         <div class="stat-content">
             <h3>Total do Mês</h3>
             <p class="stat-value">R$ {{ "%.2f"|format(total_geral or 0) }}</p>
         </div>
+        <div class="stat-trend positive">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 17l6-6 6 6M13 11h6v6"/>
+            </svg>
+        </div>
     </div>
     
-    <div class="stat-card">
-        <div class="stat-icon">📝</div>
+    <div class="stat-card secondary">
+        <div class="stat-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10,9 9,9 8,9"/>
+            </svg>
+        </div>
         <div class="stat-content">
             <h3>Total de Despesas</h3>
             <p class="stat-value">{{ despesas|length }}</p>
         </div>
+        <div class="stat-trend neutral">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 10l5 5 5-5"/>
+            </svg>
+        </div>
     </div>
     
-    <div class="stat-card">
-        <div class="stat-icon">📊</div>
+    <div class="stat-card tertiary">
+        <div class="stat-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3v18h18"/>
+                <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+            </svg>
+        </div>
         <div class="stat-content">
             <h3>Categorias</h3>
             <p class="stat-value">{{ categorias|length }}</p>
         </div>
+        <div class="stat-trend positive">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 17l6-6 6 6M13 11h6v6"/>
+            </svg>
+        </div>
     </div>
     
-    <div class="stat-card">
-        <div class="stat-icon">💳</div>
+    <div class="stat-card quaternary">
+        <div class="stat-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+        </div>
         <div class="stat-content">
             <h3>Última Despesa</h3>
             <p class="stat-value">
@@ -43,54 +80,102 @@
                 {% endif %}
             </p>
         </div>
+        <div class="stat-trend negative">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 7l-6 6-6-6"/>
+            </svg>
+        </div>
     </div>
 </div>
 
-<!-- Add Expense Form -->
+
 <div class="form-section">
     <div class="section-header">
-        <h2>Adicionar Nova Despesa</h2>
+        <div class="section-title">
+            <h2>Adicionar Nova Despesa</h2>
+            <p>Registre uma nova despesa no sistema</p>
+        </div>
     </div>
     
     <form action="{{ url_for('adicionar') }}" method="post" class="expense-form">
-        <div class="form-group">
-            <label for="data">Data</label>
-            <input type="date" id="data" name="data" required>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="data">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    Data
+                </label>
+                <input type="date" id="data" name="data" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="categoria">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Categoria
+                </label>
+                <select id="categoria" name="categoria" required>
+                    <option value="">Selecione uma categoria</option>
+                    {% for cat in categorias %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        
-        <div class="form-group">
-            <label for="categoria">Categoria</label>
-            <select id="categoria" name="categoria" required>
-                <option value="">Selecione uma categoria</option>
-                {% for cat in categorias %}
-                <option value="{{ cat }}">{{ cat }}</option>
-                {% endfor %}
-            </select>
+
+        <div class="form-row">
+            <div class="form-group full-width">
+                <label for="descricao">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    Descrição
+                </label>
+                <input type="text" id="descricao" name="descricao" placeholder="Ex: Compras no supermercado" required>
+            </div>
         </div>
-        
-        <div class="form-group">
-            <label for="descricao">Descrição</label>
-            <input type="text" id="descricao" name="descricao" placeholder="Ex: Compras no supermercado" required>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="valor">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    Valor (R$)
+                </label>
+                <input type="number" id="valor" name="valor" step="0.01" min="0" placeholder="0,00" required>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Adicionar Despesa
+                </button>
+            </div>
         </div>
-        
-        <div class="form-group">
-            <label for="valor">Valor (R$)</label>
-            <input type="number" id="valor" name="valor" step="0.01" min="0" placeholder="0,00" required>
-        </div>
-        
-        <button type="submit" class="btn-primary">
-            <span>➕</span>
-            Adicionar Despesa
-        </button>
     </form>
 </div>
 
-<!-- Expenses List -->
+
 <div class="table-section">
     <div class="section-header">
-        <h2>Lista de Despesas</h2>
+        <div class="section-title">
+            <h2>Lista de Despesas</h2>
+            <p>Histórico completo das suas despesas</p>
+        </div>
         <div class="table-info">
-            <span>{{ despesas|length }} despesa{{ 's' if despesas|length != 1 }}</span>
+            <span class="expense-count">{{ despesas|length }} despesa{{ 's' if despesas|length != 1 }}</span>
         </div>
     </div>
     
@@ -99,20 +184,44 @@
         <table class="expense-table">
             <thead>
                 <tr>
-                    <th>Data</th>
-                    <th>Categoria</th>
-                    <th>Descrição</th>
-                    <th>Valor</th>
+                    <th>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Data
+                    </th>
+                    <th>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Categoria
+                    </th>
+                    <th>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                        </svg>
+                        Descrição
+                    </th>
+                    <th>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                        Valor
+                    </th>
                 </tr>
             </thead>
             <tbody>
                 {% for d in despesas %}
                 <tr>
-                    <td>{{ d['data'] }}</td>
+                    <td class="date-cell">{{ d['data'] }}</td>
                     <td>
                         <span class="category-badge">{{ d['categoria'] }}</span>
                     </td>
-                    <td>{{ d['descricao'] }}</td>
+                    <td class="description-cell">{{ d['descricao'] }}</td>
                     <td class="value-cell">R$ {{ "%.2f"|format(d['valor']) }}</td>
                 </tr>
                 {% endfor %}
@@ -121,9 +230,17 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-icon">📝</div>
+        <div class="empty-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10,9 9,9 8,9"/>
+            </svg>
+        </div>
         <h3>Nenhuma despesa cadastrada</h3>
-        <p>Adicione sua primeira despesa usando o formulário acima.</p>
+        <p>Adicione sua primeira despesa usando o formulário acima para começar a controlar seus gastos.</p>
     </div>
     {% endif %}
 </div>

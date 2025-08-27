@@ -4,7 +4,7 @@ from datetime import datetime
 from collections import defaultdict
 
 import matplotlib
-matplotlib.use("Agg")  # <<< força backend não-interativo (resolve erro no Mac)
+matplotlib.use("Agg")  
 import matplotlib.pyplot as plt
 
 app = Flask(__name__)
@@ -74,7 +74,7 @@ def gerar_graficos():
     plt.close()
 
 
-# ----------------- Rotas -----------------
+# Rotas
 @app.route("/")
 def index():
     despesas = ler_despesas()
