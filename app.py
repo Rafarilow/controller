@@ -17,7 +17,7 @@ def garantir_arquivo_csv():
     if not os.path.exists(ARQUIVO_CSV):
         with open(ARQUIVO_CSV, "w", newline="", encoding="utf-8") as f:
             w = csv.writer(f)
-            w.writerow(["data", "categoria", "descricao", "valor"])
+            w.writerow(["id", "data", "categoria", "descricao", "valor"])
 
 
 def ler_despesas():
@@ -33,10 +33,33 @@ def ler_despesas():
 
 
 def salvar_despesa(data, categoria, descricao, valor):
-    garantir_arquivo_csv()
+    despesas = ler_despesas()
+    novo_id = max([int(d["id"]) for d in despesas], default=0) + 1
     with open(ARQUIVO_CSV, "a", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow([data, categoria, descricao, valor])
+        w.writerow([novo_id, data, categoria, descricao, valor])
+
+
+def atualizar_despesa(id, data, categoria, descricao, valor):
+    despesas = ler_despesas()
+    for d in despesas:
+        if d["id"] == str(id):
+            d["data"] = data
+            d["categoria"] = categoria
+            d["descricao"] = descricao
+            d["valor"] = float(valor)
+    with open(ARQUIVO_CSV, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["id", "data", "categoria", "descricao", "valor"])
+        w.writeheader()
+        w.writerows(despesas)
+
+
+def deletar_despesa(id):
+    despesas = [d for d in ler_despesas() if d["id"] != str(id)]
+    with open(ARQUIVO_CSV, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["id", "data", "categoria", "descricao", "valor"])
+        w.writeheader()
+        w.writerows(despesas)
 
 
 def gerar_graficos():
@@ -88,6 +111,28 @@ def adicionar():
     descricao = request.form.get("descricao")
     valor = request.form.get("valor")
     salvar_despesa(data, categoria, descricao, valor)
+    return redirect(url_for("index"))
+
+
+@app.route("/editar/<id>", methods=["GET", "POST"])
+def editar(id):
+    despesas = ler_despesas()
+    despesa = next((d for d in despesas if d["id"] == id), None)
+
+    if request.method == "POST":
+        data = request.form.get("data")
+        categoria = request.form.get("categoria")
+        descricao = request.form.get("descricao")
+        valor = request.form.get("valor")
+        atualizar_despesa(id, data, categoria, descricao, valor)
+        return redirect(url_for("index"))
+
+    return render_template("editar.html", despesa=despesa, categorias=CATEGORIAS)
+
+
+@app.route("/deletar/<id>", methods=["POST"])
+def deletar(id):
+    deletar_despesa(id)
     return redirect(url_for("index"))
 
 

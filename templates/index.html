@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="page-header">
-    <h1>Dashboard</h1>
-    <p>Controle suas despesas de forma inteligente</p>
+    <h1>Controle suas despesas de forma inteligente</h1>
+    <p></p>
 </div>
-
 
 <div class="stats-grid">
     <div class="stat-card primary">
@@ -88,7 +87,6 @@
     </div>
 </div>
 
-
 <div class="form-section">
     <div class="section-header">
         <div class="section-title">
@@ -100,25 +98,12 @@
     <form action="{{ url_for('adicionar') }}" method="post" class="expense-form">
         <div class="form-row">
             <div class="form-group">
-                <label for="data">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    Data
-                </label>
+                <label for="data">Data</label>
                 <input type="date" id="data" name="data" required>
             </div>
             
             <div class="form-group">
-                <label for="categoria">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    Categoria
-                </label>
+                <label for="categoria">Categoria</label>
                 <select id="categoria" name="categoria" required>
                     <option value="">Selecione uma categoria</option>
                     {% for cat in categorias %}
@@ -130,43 +115,23 @@
 
         <div class="form-row">
             <div class="form-group full-width">
-                <label for="descricao">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14,2 14,8 20,8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                    </svg>
-                    Descrição
-                </label>
+                <label for="descricao">Descrição</label>
                 <input type="text" id="descricao" name="descricao" placeholder="Ex: Compras no supermercado" required>
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label for="valor">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    Valor (R$)
-                </label>
+                <label for="valor">Valor (R$)</label>
                 <input type="number" id="valor" name="valor" step="0.01" min="0" placeholder="0,00" required>
             </div>
             
             <div class="form-group">
-                <button type="submit" class="btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"/>
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    Adicionar Despesa
-                </button>
+                <button type="submit" class="btn-primary">Adicionar Despesa</button>
             </div>
         </div>
     </form>
 </div>
-
 
 <div class="table-section">
     <div class="section-header">
@@ -184,45 +149,34 @@
         <table class="expense-table">
             <thead>
                 <tr>
-                    <th>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
-                        Data
-                    </th>
-                    <th>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                        </svg>
-                        Categoria
-                    </th>
-                    <th>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14,2 14,8 20,8"/>
-                        </svg>
-                        Descrição
-                    </th>
-                    <th>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                        </svg>
-                        Valor
-                    </th>
+                    <th>Data</th>
+                    <th>Categoria</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for d in despesas %}
                 <tr>
                     <td class="date-cell">{{ d['data'] }}</td>
-                    <td>
-                        <span class="category-badge">{{ d['categoria'] }}</span>
-                    </td>
+                    <td><span class="category-badge">{{ d['categoria'] }}</span></td>
                     <td class="description-cell">{{ d['descricao'] }}</td>
                     <td class="value-cell">R$ {{ "%.2f"|format(d['valor']) }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- Botão Editar -->
+                            <button type="button" 
+                                    class="action-btn btn-edit" 
+                                    onclick="openEditModal({{ d['id'] }}, '{{ d['data'] }}', '{{ d['categoria'] }}', '{{ d['descricao'] }}', {{ d['valor'] }})">
+                                ✏️
+                            </button>
+                            <!-- Botão Deletar -->
+                            <form action="{{ url_for('deletar', id=d['id']) }}" method="post" style="display:inline;">
+                                <button type="submit" class="action-btn btn-delete">🗑️</button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -230,18 +184,72 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-icon">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14,2 14,8 20,8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10,9 9,9 8,9"/>
-            </svg>
-        </div>
+        <div class="empty-icon">📄</div>
         <h3>Nenhuma despesa cadastrada</h3>
         <p>Adicione sua primeira despesa usando o formulário acima para começar a controlar seus gastos.</p>
     </div>
     {% endif %}
 </div>
+
+<!-- Modal de edição -->
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <h2>Editar Despesa</h2>
+    <form id="editForm" method="post">
+      <div class="form-group">
+        <label for="editData">Data</label>
+        <input type="date" id="editData" name="data" required>
+      </div>
+
+      <div class="form-group">
+        <label for="editCategoria">Categoria</label>
+        <select id="editCategoria" name="categoria" required>
+          {% for cat in categorias %}
+            <option value="{{ cat }}">{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="editDescricao">Descrição</label>
+        <input type="text" id="editDescricao" name="descricao" required>
+      </div>
+
+      <div class="form-group">
+        <label for="editValor">Valor (R$)</label>
+        <input type="number" id="editValor" name="valor" step="0.01" min="0" required>
+      </div>
+
+      <div class="form-row">
+        <button type="submit" class="btn-primary">Salvar Alterações</button>
+        <button type="button" class="btn-delete" onclick="closeEditModal()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditModal(id, data, categoria, descricao, valor) {
+    const modal = document.getElementById('editModal');
+    modal.style.display = 'flex';
+
+    document.getElementById('editData').value = data;
+    document.getElementById('editCategoria').value = categoria;
+    document.getElementById('editDescricao').value = descricao;
+    document.getElementById('editValor').value = valor;
+
+    document.getElementById('editForm').action = `/editar/${id}`;
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('editModal');
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+}
+</script>
 {% endblock %}
