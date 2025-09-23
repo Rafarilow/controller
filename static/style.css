@@ -1178,7 +1178,7 @@ select:focus {
         color: black !important;
         box-shadow: none !important;
     }
-}/* ====== Action Buttons (Editar/Excluir) ====== */
+}
 .action-buttons {
     display: flex;
     gap: 8px;
@@ -1222,7 +1222,6 @@ select:focus {
     border-color: var(--red-500);
 }
 
-/* ====== Modal ====== */
 .modal {
     display: none;
     position: fixed;
@@ -1241,4 +1240,57 @@ select:focus {
     box-shadow: var(--shadow-lg);
     width: 400px;
     max-width: 90%;
+}
+.hidden {
+    display: none;
+}
+
+.edit-form {
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.inline-form input,
+.inline-form select {
+    margin: 5px;
+    padding: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.edit-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-danger {
+    background-color: var(--red-500);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background-color: var(--red-600);
+}
+
+.btn-secondary {
+    background-color: #9ca3af; 
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+.menu-toggle {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
 }
