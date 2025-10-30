@@ -1,12 +1,27 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+app.secret_key = 'sua_chave_secreta_aqui_mude_em_producao'
 
 
 def criar_bd():
     conn = sqlite3.connect("despesas.db")
     cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            senha TEXT NOT NULL,
+            data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS despesas (
@@ -23,8 +38,73 @@ def criar_bd():
 
 
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "").strip()
+
+        conn = sqlite3.connect("despesas.db")
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM usuarios WHERE email = ?", (email,))
+        usuario = cursor.fetchone()
+        conn.close()
+
+        if usuario and check_password_hash(usuario["senha"], password):
+            session["usuario_id"] = usuario["id"]
+            session["usuario_nome"] = usuario["nome"]
+            return redirect(url_for("index"))
+        else:
+            return render_template("login.html", error="Email ou senha incorretos")
+
+    return render_template("login.html")
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        nome = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
+
+        if password != confirm_password:
+            return render_template("signup.html", error="As senhas não coincidem")
+
+        if len(password) < 6:
+            return render_template("signup.html", error="A senha deve ter pelo menos 6 caracteres")
+
+        conn = sqlite3.connect("despesas.db")
+        cursor = conn.cursor()
+
+        try:
+            senha_hash = generate_password_hash(password)
+            cursor.execute(
+                "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
+                (nome, email, senha_hash),
+            )
+            conn.commit()
+            conn.close()
+            return redirect(url_for("login"))
+        except sqlite3.IntegrityError:
+            conn.close()
+            return render_template("signup.html", error="Este email já está cadastrado")
+
+    return render_template("signup.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 @app.route("/")
 def index():
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
     conn = sqlite3.connect("despesas.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -41,6 +121,9 @@ def index():
 
 @app.route("/relatorio")
 def relatorio():
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
     conn = sqlite3.connect("despesas.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -53,7 +136,6 @@ def relatorio():
 
     conn.close()
 
-    # Preparar dados para Chart.js
     categorias_labels = [c["categoria"] for c in categorias]
     categorias_valores = [c["total"] or 0 for c in categorias]
 
@@ -72,6 +154,9 @@ def relatorio():
 
 @app.route("/adicionar", methods=["POST"])
 def adicionar():
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
     data = request.form.get("data", "").strip()
     descricao = request.form.get("descricao", "").strip()
     categoria = request.form.get("categoria", "").strip()
@@ -94,9 +179,11 @@ def adicionar():
     return redirect(url_for("index"))
 
 
-
 @app.route("/editar/<int:id>", methods=["POST"])
 def editar(id):
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
     data = request.form.get("data", "").strip()
     descricao = request.form.get("descricao", "").strip()
     categoria = request.form.get("categoria", "").strip()
@@ -119,11 +206,11 @@ def editar(id):
     return redirect(url_for("index"))
 
 
-# ======================
-# Rota: Deletar despesa
-# ======================
 @app.route("/deletar/<int:id>", methods=["POST"])
 def deletar(id):
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
     conn = sqlite3.connect("despesas.db")
     cursor = conn.cursor()
     cursor.execute("DELETE FROM despesas WHERE id = ?", (id,))

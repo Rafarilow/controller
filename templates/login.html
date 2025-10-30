@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Controller</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/icon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-left">
+            <div class="login-decoration">
+                <div class="decoration-circle circle-1"></div>
+                <div class="decoration-circle circle-2"></div>
+                <div class="decoration-circle circle-3"></div>
+            </div>
+
+            <div class="login-content">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Logo" class="login-logo">
+                    <h1 class="brand-title">Controller</h1>
+                </div>
+
+                <div class="welcome-text">
+                    <h2>Bem-vindo de volta</h2>
+                    <p>Entre com suas credenciais para acessar sua conta</p>
+                </div>
+
+                {% if error %}
+                <div class="alert-error">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>{{ error }}</span>
+                </div>
+                {% endif %}
+
+                <form action="{{ url_for('login') }}" method="POST" class="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            <input type="email" id="email" name="email" placeholder="seu@email.com" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword()">
+                                <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" name="remember">
+                            <span class="checkmark"></span>
+                            <span class="checkbox-label">Lembrar-me</span>
+                        </label>
+                        <a href="#" class="forgot-link">Esqueceu a senha?</a>
+                    </div>
+
+                    <button type="submit" class="btn-login">
+                        <span>Entrar</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>ou</span>
+                </div>
+
+                <div class="signup-section">
+                    <p>Ainda não tem uma conta?</p>
+                    <a href="{{ url_for('signup') }}" class="btn-signup">Criar conta</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-right">
+            <div class="illustration-container">
+                <div class="floating-card card-1">
+                    <div class="card-icon">💰</div>
+                    <div class="card-content">
+                        <h4>Total Geral</h4>
+                        <p class="card-value">R$ 12.450,00</p>
+                    </div>
+                </div>
+
+                <div class="floating-card card-2">
+                    <div class="card-icon">📊</div>
+                    <div class="card-content">
+                        <h4>Este Mês</h4>
+                        <p class="card-value">R$ 3.280,00</p>
+                    </div>
+                </div>
+
+                <div class="floating-card card-3">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <h4>Economia</h4>
+                        <p class="card-value success">+15%</p>
+                    </div>
+                </div>
+
+                <div class="illustration-text">
+                    <h2>Gerencie suas finanças com inteligência</h2>
+                    <p>Acompanhe suas despesas, crie relatórios detalhados e tome decisões financeiras mais inteligentes.</p>
+
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Controle total de despesas</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Relatórios detalhados</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Interface intuitiva</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.login-form');
+            form.addEventListener('submit', function(e) {
+                const button = form.querySelector('.btn-login');
+                button.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    button.style.transform = '';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
