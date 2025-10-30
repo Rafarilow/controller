@@ -1,4 +1,4 @@
-/* ====== CSS Reset & Base Styles ====== */
+
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +6,7 @@
 }
 
 :root {
-    /* Light Mode Colors */
+   
     --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;
     --bg-tertiary: #f1f5f9;
@@ -16,13 +16,13 @@
     --border-primary: #e2e8f0;
     --border-secondary: #cbd5e1;
     
-    /* Brand Colors */
+ 
     --emerald-500: #10b981;
     --emerald-600: #059669;
     --emerald-50: #ecfdf5;
     --emerald-100: #d1fae5;
     
-    /* Accent Colors */
+   
     --blue-500: #3b82f6;
     --blue-50: #eff6ff;
     --purple-500: #8b5cf6;
@@ -32,20 +32,20 @@
     --red-500: #ef4444;
     --red-50: #fef2f2;
     
-    /* Shadows */
+    
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     
-    /* Transitions */
+    
     --transition-fast: 0.15s ease;
     --transition-normal: 0.3s ease;
     --transition-slow: 0.5s ease;
 }
 
 body.dark-mode {
-    /* Dark Mode Colors */
+    
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-tertiary: #334155;
@@ -69,7 +69,7 @@ body {
     overflow-x: hidden;
 }
 
-/* ====== Mobile Menu Toggle ====== */
+
 .mobile-menu-toggle {
     display: none;
     position: fixed;
@@ -95,7 +95,7 @@ body {
     box-shadow: var(--shadow-xl);
 }
 
-/* ====== Sidebar ====== */
+
 .sidebar {
     position: fixed;
     left: 0;
@@ -230,7 +230,7 @@ body.light-mode .moon-icon {
     display: none;
 }
 
-/* Conteudo central */
+
 .main-content {
     margin-left: 320px;
     min-height: 100vh;

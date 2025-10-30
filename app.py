@@ -79,7 +79,8 @@ def signup():
         cursor = conn.cursor()
 
         try:
-            senha_hash = generate_password_hash(password)
+            senha_hash = generate_password_hash(password, method='pbkdf2:sha256')
+
             cursor.execute(
                 "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
                 (nome, email, senha_hash),
