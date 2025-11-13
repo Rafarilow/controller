@@ -1,6 +1,13 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
+from io import BytesIO
+from datetime import datetime
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui_mude_em_producao'
@@ -29,13 +36,15 @@ def criar_bd():
             data TEXT NOT NULL,
             descricao TEXT NOT NULL,
             categoria TEXT NOT NULL,
-            valor REAL NOT NULL DEFAULT 0
+            valor REAL NOT NULL DEFAULT 0,
+            usuario_id INTEGER NOT NULL,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
         )
         """
     )
+
     conn.commit()
     conn.close()
-
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -106,11 +115,13 @@ def index():
     if "usuario_id" not in session:
         return redirect(url_for("login"))
 
+    usuario_id = session["usuario_id"]
+
     conn = sqlite3.connect("despesas.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM despesas ORDER BY data DESC")
+    cursor.execute("SELECT * FROM despesas WHERE usuario_id = ? ORDER BY data DESC", (usuario_id,))
     despesas = cursor.fetchall()
 
     total_geral = sum((d["valor"] or 0) for d in despesas) if despesas else 0
@@ -119,29 +130,44 @@ def index():
     return render_template("index.html", despesas=despesas, total_geral=total_geral)
 
 
-
 @app.route("/relatorio")
 def relatorio():
     if "usuario_id" not in session:
         return redirect(url_for("login"))
 
+    usuario_id = session["usuario_id"]
+
     conn = sqlite3.connect("despesas.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    cursor.execute("SELECT categoria, SUM(valor) as total FROM despesas GROUP BY categoria")
+    cursor.execute(
+        "SELECT categoria, SUM(valor) as total FROM despesas WHERE usuario_id = ? GROUP BY categoria",
+        (usuario_id,),
+    )
     categorias = cursor.fetchall()
 
-    cursor.execute("SELECT strftime('%Y-%m', data) as mes, SUM(valor) as total FROM despesas GROUP BY mes")
+    cursor.execute(
+        "SELECT strftime('%Y-%m', data) as mes, SUM(valor) as total FROM despesas WHERE usuario_id = ? GROUP BY mes",
+        (usuario_id,),
+    )
     meses = cursor.fetchall()
 
     conn.close()
 
+    # 🔹 Cálculos adicionais para o resumo
     categorias_labels = [c["categoria"] for c in categorias]
     categorias_valores = [c["total"] or 0 for c in categorias]
 
     meses_labels = [m["mes"] for m in meses]
     meses_valores = [m["total"] or 0 for m in meses]
+
+    
+
+    total_gasto = sum(categorias_valores) if categorias_valores else 0
+    media_por_categoria = total_gasto / len(categorias_valores) if categorias_valores else 0
+    categoria_maior_gasto = categorias_labels[categorias_valores.index(max(categorias_valores))] if categorias_valores else "Nenhuma"
+    periodo = datetime.now().strftime("%B de %Y").capitalize()
 
     return render_template(
         "relatorio.html",
@@ -149,8 +175,107 @@ def relatorio():
         categorias_valores=categorias_valores,
         meses_labels=meses_labels,
         meses_valores=meses_valores,
+        total_gasto=total_gasto,
+        media_por_categoria=media_por_categoria,
+        categoria_maior_gasto=categoria_maior_gasto,
+        periodo=periodo
     )
 
+
+@app.route("/exportar_pdf")
+def exportar_pdf():
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["usuario_id"]
+    conn = sqlite3.connect("despesas.db")
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT data, descricao, categoria, valor
+        FROM despesas
+        WHERE usuario_id = ?
+        ORDER BY data DESC
+    """, (usuario_id,))
+    despesas = cursor.fetchall()
+
+    cursor.execute("SELECT SUM(valor) FROM despesas WHERE usuario_id = ?", (usuario_id,))
+    total = cursor.fetchone()[0] or 0
+
+    cursor.execute("SELECT categoria, SUM(valor) FROM despesas WHERE usuario_id = ? GROUP BY categoria", (usuario_id,))
+    categorias = cursor.fetchall()
+    media_por_categoria = total / len(categorias) if categorias else 0
+    categoria_maior = max(categorias, key=lambda x: x[1])[0] if categorias else "Nenhuma"
+
+    conn.close()
+
+    if not despesas:
+        flash("Não há despesas para exportar.")
+        return redirect(url_for("relatorio"))
+
+    buffer = BytesIO()
+    pdf = SimpleDocTemplate(buffer, pagesize=A4)
+    elementos = []
+    styles = getSampleStyleSheet()
+
+    # 🔹 Cabeçalho
+    titulo = Paragraph("<b>Relatório de Despesas Mensal</b>", styles["Title"])
+    usuario = Paragraph(f"Usuário: <b>{session['usuario_nome']}</b>", styles["Normal"])
+    data_geracao = Paragraph(f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles["Normal"])
+    elementos.extend([titulo, usuario, data_geracao, Spacer(1, 12)])
+
+    # 🔹 Resumo
+    resumo = [
+        ["Total Gasto", f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")],
+        ["Média por Categoria", f"R$ {media_por_categoria:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")],
+        ["Maior Categoria de Gasto", categoria_maior],
+        ["Período", datetime.now().strftime("%B de %Y").capitalize()],
+    ]
+
+    tabela_resumo = Table(resumo, colWidths=[7*cm, 7*cm])
+    tabela_resumo.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("GRID", (0, 0), (-1, -1), 0.3, colors.grey),
+    ]))
+
+    elementos.extend([tabela_resumo, Spacer(1, 18)])
+
+    # 🔹 Tabela de despesas
+    dados = [["Data", "Descrição", "Categoria", "Valor (R$)"]]
+    for d in despesas:
+        valor = d["valor"] or 0
+        dados.append([
+            d["data"],
+            d["descricao"],
+            d["categoria"],
+            f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        ])
+    dados.append(["", "", "Total Geral", f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")])
+
+    tabela = Table(dados, colWidths=[3*cm, 6*cm, 4*cm, 3*cm])
+    tabela.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.darkgreen),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("BACKGROUND", (0, 1), (-1, -2), colors.whitesmoke),
+        ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+        ("BACKGROUND", (0, -1), (-1, -1), colors.lightgrey),
+    ]))
+
+    elementos.append(tabela)
+    pdf.build(elementos)
+
+    buffer.seek(0)
+    response = make_response(buffer.read())
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "attachment; filename=relatorio_despesas.pdf"
+    return response
 
 
 @app.route("/adicionar", methods=["POST"])
@@ -168,11 +293,13 @@ def adicionar():
     except ValueError:
         valor = 0.0
 
+    usuario_id = session["usuario_id"]
+
     conn = sqlite3.connect("despesas.db")
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO despesas (data, descricao, categoria, valor) VALUES (?, ?, ?, ?)",
-        (data, descricao, categoria, valor),
+        "INSERT INTO despesas (data, descricao, categoria, valor, usuario_id) VALUES (?, ?, ?, ?, ?)",
+        (data, descricao, categoria, valor, usuario_id),
     )
     conn.commit()
     conn.close()
@@ -198,8 +325,8 @@ def editar(id):
     conn = sqlite3.connect("despesas.db")
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE despesas SET data = ?, descricao = ?, categoria = ?, valor = ? WHERE id = ?",
-        (data, descricao, categoria, valor, id),
+        "UPDATE despesas SET data = ?, descricao = ?, categoria = ?, valor = ? WHERE id = ? AND usuario_id = ?",
+        (data, descricao, categoria, valor, id, session["usuario_id"]),
     )
     conn.commit()
     conn.close()
@@ -214,12 +341,11 @@ def deletar(id):
 
     conn = sqlite3.connect("despesas.db")
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM despesas WHERE id = ?", (id,))
+    cursor.execute("DELETE FROM despesas WHERE id = ? AND usuario_id = ?", (id, session["usuario_id"]))
     conn.commit()
     conn.close()
 
     return redirect(url_for("index"))
-
 
 
 if __name__ == "__main__":

@@ -146,4 +146,79 @@ function toggleEdit(id) {
     form.classList.toggle("hidden");
 }
 </script>
+<style>
+
+    /* 🔹 Corrige layout da tabela */
+.expense-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    table-layout: fixed; /* garante distribuição uniforme */
+}
+
+/* 🔹 Cabeçalhos alinhados na horizontal */
+.expense-table thead tr {
+    display: table-row !important; /* força linha horizontal */
+}
+
+.expense-table th {
+    display: table-cell !important;
+    background: #f9fafb;
+    color: #374151;
+    text-align: left;
+    padding: 12px 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+/* 🔹 Células */
+.expense-table td {
+    display: table-cell;
+    padding: 12px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #1f2937;
+    vertical-align: middle;
+}
+
+/* 🔹 Ajuste das larguras */
+.expense-table th:nth-child(1),
+.expense-table td:nth-child(1) {
+    width: 15%;
+}
+.expense-table th:nth-child(2),
+.expense-table td:nth-child(2) {
+    width: 30%;
+}
+.expense-table th:nth-child(3),
+.expense-table td:nth-child(3) {
+    width: 20%;
+}
+.expense-table th:nth-child(4),
+.expense-table td:nth-child(4) {
+    width: 20%;
+}
+.expense-table th:nth-child(5),
+.expense-table td:nth-child(5) {
+    width: 15%;
+    text-align: right;
+}
+
+/* 🔹 Categoria (badge) */
+.category-badge {
+    background-color: #10b981;
+    color: white;
+    border-radius: 16px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+}
+
+/* 🔹 Ações */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+</style>
 {% endblock %}

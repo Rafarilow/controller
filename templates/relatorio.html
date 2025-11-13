@@ -2,19 +2,49 @@
 {% block content %}
 <div class="page-header">
     <h1>Relatórios</h1>
-    <p>Análise detalhada das suas despesas</p>
+    <p>Resumo e análise das suas despesas</p>
 </div>
 
+<!-- 🔹 RESUMO DE DADOS -->
+<div class="summary-section">
+    <div class="summary-card">
+        <h3>Total Gasto</h3>
+        <p class="valor">R$ {{ total_gasto | round(2) }}</p>
+    </div>
+    <div class="summary-card">
+        <h3>Média por Categoria</h3>
+        <p class="valor">R$ {{ media_por_categoria | round(2) }}</p>
+    </div>
+    <div class="summary-card destaque">
+        <h3>Maior Despesa</h3>
+        <p class="valor">{{ categoria_maior_gasto }}</p>
+    </div>
+    <div class="summary-card">
+        <h3>Período</h3>
+        <p class="valor">{{ periodo }}</p>
+    </div>
+</div>
+
+<!-- 🔹 GRÁFICOS -->
 <div class="charts-section">
-    <div class="section-header">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; position: relative;">
         <div class="section-title">
             <h2>Gráficos e Visualizações</h2>
             <p>Representação visual dos seus dados financeiros</p>
         </div>
+
+        <!-- Botão PDF -->
+        <button id="exportarPDF" 
+                title="Exportar Relatório em PDF"
+                style="background: none; border: none; cursor: pointer; padding: 6px 10px; position: absolute; right: 0; top: 5px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="#10b981" viewBox="0 0 24 24" width="24" height="24">
+                <path d="M5 20h14v-2H5v2zm7-18-5.5 5.5h4v6h3v-6h4L12 2z"/>
+            </svg>
+        </button>
     </div>
 
     <div class="charts-grid">
-        
+        <!-- Gráfico por Categoria -->
         <div class="chart-card">
             <div class="chart-header">
                 <h3>Gastos por Categoria</h3>
@@ -24,7 +54,7 @@
             </div>
         </div>
 
-        
+        <!-- Gráfico por Mês -->
         <div class="chart-card">
             <div class="chart-header">
                 <h3>Gastos por Mês</h3>
@@ -36,28 +66,29 @@
     </div>
 </div>
 
-
+<!-- Chart.js e jsPDF -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script>
-   
+    // 🔸 Gráfico de Gastos por Categoria
     const ctxCat = document.getElementById('categoriaChart').getContext('2d');
-    new Chart(ctxCat, {
+    const categoriaChart = new Chart(ctxCat, {
         type: 'doughnut',
         data: {
             labels: {{ categorias_labels|tojson }},
             datasets: [{
                 data: {{ categorias_valores|tojson }},
-                backgroundColor: [
-                    '#10b981', '#3b82f6', '#8b5cf6', '#f97316', '#ef4444', '#22c55e', '#0ea5e9', '#9333ea'
-                ],
+                backgroundColor: ['#10b981','#3b82f6','#8b5cf6','#f97316','#ef4444','#22c55e','#0ea5e9','#9333ea'],
                 borderWidth: 1
             }]
-        }
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
     });
 
-   
+    // 🔸 Gráfico de Gastos por Mês
     const ctxMes = document.getElementById('mesChart').getContext('2d');
-    new Chart(ctxMes, {
+    const mesChart = new Chart(ctxMes, {
         type: 'bar',
         data: {
             labels: {{ meses_labels|tojson }},
@@ -65,16 +96,85 @@
                 label: 'Total por mês (R$)',
                 data: {{ meses_valores|tojson }},
                 backgroundColor: '#10b981',
-                borderWidth: 1
+                borderRadius: 6,
+                borderSkipped: false
             }]
         },
         options: {
             scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
+                y: { beginAtZero: true, title: { display: true, text: 'Valor em Reais (R$)' } },
+                x: { title: { display: true, text: 'Mês de referência' } }
+            },
+            plugins: { legend: { display: false } }
         }
     });
+
+    // 🔹 Exportar PDF
+    document.getElementById('exportarPDF').addEventListener('click', async () => {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const margin = 15;
+
+        pdf.setFontSize(18);
+        pdf.text("Relatório de Despesas Mensal", margin, 20);
+        pdf.setFontSize(12);
+        pdf.text("Gerado automaticamente pelo Controller", margin, 28);
+
+        // 🔸 Resumo de dados
+        pdf.setFontSize(14);
+        pdf.text("Resumo Geral", margin, 40);
+        pdf.setFontSize(12);
+        pdf.text(`• Total Gasto: R$ {{ total_gasto | round(2) }}`, margin, 50);
+        pdf.text(`• Média por Categoria: R$ {{ media_por_categoria | round(2) }}`, margin, 58);
+        pdf.text(`• Maior Despesa: {{ categoria_maior_gasto }}`, margin, 66);
+        pdf.text(`• Período: {{ periodo }}`, margin, 74);
+
+        // 🔸 Adiciona os gráficos
+        const categoriaImg = categoriaChart.toBase64Image();
+        const mesImg = mesChart.toBase64Image();
+
+        pdf.addImage(categoriaImg, 'PNG', margin, 90, 180, 80);
+        pdf.addPage();
+        pdf.addImage(mesImg, 'PNG', margin, 20, 180, 100);
+
+        pdf.save("relatorio_despesas.pdf");
+    });
 </script>
+<style>
+    .summary-section {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+    gap: 15px;
+}
+
+.summary-card {
+    flex: 1 1 220px;
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 12px 16px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.summary-card h3 {
+    color: #6b7280;
+    font-size: 0.85rem; /* 🔽 diminui o título */
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.summary-card .valor {
+    font-size: 1.2rem; /* 🔽 diminui o valor */
+    font-weight: 600;
+    color: #10b981;
+    margin-top: 2px;
+}
+
+.summary-card.destaque {
+    background: #ecfdf5;
+    border: 1px solid #10b981;
+}
+</style>
 {% endblock %}
