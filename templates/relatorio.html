@@ -33,14 +33,14 @@
             <p>Representação visual dos seus dados financeiros</p>
         </div>
 
-        <!-- Botão PDF -->
-        <button id="exportarPDF" 
-                title="Exportar Relatório em PDF"
-                style="background: none; border: none; cursor: pointer; padding: 6px 10px; position: absolute; right: 0; top: 5px;">
+        <!-- Botão PDF (agora chamando o BACKEND) -->
+        <a href="{{ url_for('exportar_pdf') }}"
+           title="Exportar Relatório em PDF"
+           style="background: none; border: none; cursor: pointer; padding: 6px 10px; position: absolute; right: 0; top: 5px;">
             <svg xmlns="http://www.w3.org/2000/svg" fill="#10b981" viewBox="0 0 24 24" width="24" height="24">
                 <path d="M5 20h14v-2H5v2zm7-18-5.5 5.5h4v6h3v-6h4L12 2z"/>
             </svg>
-        </button>
+        </a>
     </div>
 
     <div class="charts-grid">
@@ -66,9 +66,8 @@
     </div>
 </div>
 
-<!-- Chart.js e jsPDF -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
     // 🔸 Gráfico de Gastos por Categoria
@@ -108,40 +107,10 @@
             plugins: { legend: { display: false } }
         }
     });
-
-    // 🔹 Exportar PDF
-    document.getElementById('exportarPDF').addEventListener('click', async () => {
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        const margin = 15;
-
-        pdf.setFontSize(18);
-        pdf.text("Relatório de Despesas Mensal", margin, 20);
-        pdf.setFontSize(12);
-        pdf.text("Gerado automaticamente pelo Controller", margin, 28);
-
-        // 🔸 Resumo de dados
-        pdf.setFontSize(14);
-        pdf.text("Resumo Geral", margin, 40);
-        pdf.setFontSize(12);
-        pdf.text(`• Total Gasto: R$ {{ total_gasto | round(2) }}`, margin, 50);
-        pdf.text(`• Média por Categoria: R$ {{ media_por_categoria | round(2) }}`, margin, 58);
-        pdf.text(`• Maior Despesa: {{ categoria_maior_gasto }}`, margin, 66);
-        pdf.text(`• Período: {{ periodo }}`, margin, 74);
-
-        // 🔸 Adiciona os gráficos
-        const categoriaImg = categoriaChart.toBase64Image();
-        const mesImg = mesChart.toBase64Image();
-
-        pdf.addImage(categoriaImg, 'PNG', margin, 90, 180, 80);
-        pdf.addPage();
-        pdf.addImage(mesImg, 'PNG', margin, 20, 180, 100);
-
-        pdf.save("relatorio_despesas.pdf");
-    });
 </script>
+
 <style>
-    .summary-section {
+.summary-section {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
@@ -160,13 +129,13 @@
 
 .summary-card h3 {
     color: #6b7280;
-    font-size: 0.85rem; /* 🔽 diminui o título */
+    font-size: 0.85rem;
     font-weight: 600;
     margin-bottom: 4px;
 }
 
 .summary-card .valor {
-    font-size: 1.2rem; /* 🔽 diminui o valor */
+    font-size: 1.2rem;
     font-weight: 600;
     color: #10b981;
     margin-top: 2px;
@@ -177,4 +146,5 @@
     border: 1px solid #10b981;
 }
 </style>
+
 {% endblock %}

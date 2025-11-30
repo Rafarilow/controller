@@ -5,20 +5,24 @@ from io import BytesIO
 from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import (
+    SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+)
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import cm
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui_mude_em_producao'
 
 
+# -------------------------------
+# CRIAÇÃO DO BANCO
+# -------------------------------
 def criar_bd():
     conn = sqlite3.connect("despesas.db")
     cursor = conn.cursor()
 
-    cursor.execute(
-        """
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
@@ -26,11 +30,9 @@ def criar_bd():
             senha TEXT NOT NULL,
             data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-        """
-    )
+    """)
 
-    cursor.execute(
-        """
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS despesas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             data TEXT NOT NULL,
@@ -40,13 +42,15 @@ def criar_bd():
             usuario_id INTEGER NOT NULL,
             FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
         )
-        """
-    )
+    """)
 
     conn.commit()
     conn.close()
 
 
+# -------------------------------
+# LOGIN
+# -------------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -70,6 +74,9 @@ def login():
     return render_template("login.html")
 
 
+# -------------------------------
+# CADASTRO
+# -------------------------------
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -89,7 +96,6 @@ def signup():
 
         try:
             senha_hash = generate_password_hash(password, method='pbkdf2:sha256')
-
             cursor.execute(
                 "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
                 (nome, email, senha_hash),
@@ -104,12 +110,18 @@ def signup():
     return render_template("signup.html")
 
 
+# -------------------------------
+# LOGOUT
+# -------------------------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
 
 
+# -------------------------------
+# INDEX (LISTAGEM)
+# -------------------------------
 @app.route("/")
 def index():
     if "usuario_id" not in session:
@@ -130,6 +142,9 @@ def index():
     return render_template("index.html", despesas=despesas, total_geral=total_geral)
 
 
+# -------------------------------
+# RELATÓRIO EM HTML
+# -------------------------------
 @app.route("/relatorio")
 def relatorio():
     if "usuario_id" not in session:
@@ -155,14 +170,11 @@ def relatorio():
 
     conn.close()
 
-    # 🔹 Cálculos adicionais para o resumo
     categorias_labels = [c["categoria"] for c in categorias]
-    categorias_valores = [c["total"] or 0 for c in categorias]
+    categorias_valores = [c["total"] for c in categorias]
 
     meses_labels = [m["mes"] for m in meses]
-    meses_valores = [m["total"] or 0 for m in meses]
-
-    
+    meses_valores = [m["total"] for m in meses]
 
     total_gasto = sum(categorias_valores) if categorias_valores else 0
     media_por_categoria = total_gasto / len(categorias_valores) if categorias_valores else 0
@@ -182,12 +194,16 @@ def relatorio():
     )
 
 
+# -------------------------------
+# RELATÓRIO EM PDF (VERSÃO NOVA)
+# -------------------------------
 @app.route("/exportar_pdf")
 def exportar_pdf():
     if "usuario_id" not in session:
         return redirect(url_for("login"))
 
     usuario_id = session["usuario_id"]
+
     conn = sqlite3.connect("despesas.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -205,47 +221,70 @@ def exportar_pdf():
 
     cursor.execute("SELECT categoria, SUM(valor) FROM despesas WHERE usuario_id = ? GROUP BY categoria", (usuario_id,))
     categorias = cursor.fetchall()
-    media_por_categoria = total / len(categorias) if categorias else 0
-    categoria_maior = max(categorias, key=lambda x: x[1])[0] if categorias else "Nenhuma"
 
     conn.close()
+
+    media_por_categoria = total / len(categorias) if categorias else 0
+    categoria_maior = max(categorias, key=lambda x: x[1])[0] if categorias else "Nenhuma"
 
     if not despesas:
         flash("Não há despesas para exportar.")
         return redirect(url_for("relatorio"))
 
+    # Criar PDF
     buffer = BytesIO()
     pdf = SimpleDocTemplate(buffer, pagesize=A4)
     elementos = []
     styles = getSampleStyleSheet()
 
-    # 🔹 Cabeçalho
-    titulo = Paragraph("<b>Relatório de Despesas Mensal</b>", styles["Title"])
-    usuario = Paragraph(f"Usuário: <b>{session['usuario_nome']}</b>", styles["Normal"])
-    data_geracao = Paragraph(f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles["Normal"])
-    elementos.extend([titulo, usuario, data_geracao, Spacer(1, 12)])
+    # LOGO
+    try:
+        logo = Image("static/images/icon.png", width=80, height=80)
+        logo.hAlign = "CENTER"
+        elementos.append(logo)
+    except:
+        elementos.append(Paragraph("<b>Controller</b>", styles["Title"]))
 
-    # 🔹 Resumo
+    elementos.append(Spacer(1, 12))
+
+    # TÍTULO
+    titulo = Paragraph("<b>Relatório de Despesas Mensal</b>", styles["Title"])
+    elementos.append(titulo)
+    elementos.append(Spacer(1, 12))
+
+    # INFO DO USUÁRIO
+    info = Paragraph(
+        f"Usuário: <b>{session['usuario_nome']}</b><br/>"
+        f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+        styles["Normal"]
+    )
+    elementos.append(info)
+    elementos.append(Spacer(1, 18))
+
+    # RESUMO
     resumo = [
         ["Total Gasto", f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")],
         ["Média por Categoria", f"R$ {media_por_categoria:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")],
-        ["Maior Categoria de Gasto", categoria_maior],
+        ["Maior Categoria", categoria_maior],
         ["Período", datetime.now().strftime("%B de %Y").capitalize()],
     ]
 
-    tabela_resumo = Table(resumo, colWidths=[7*cm, 7*cm])
+    tabela_resumo = Table(resumo, colWidths=[7 * cm, 7 * cm])
     tabela_resumo.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ("GRID", (0, 0), (-1, -1), 0.3, colors.grey),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a3c6e")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey)
     ]))
 
-    elementos.extend([tabela_resumo, Spacer(1, 18)])
+    elementos.append(tabela_resumo)
+    elementos.append(Spacer(1, 22))
 
-    # 🔹 Tabela de despesas
+    # TABELA DE DESPESAS
     dados = [["Data", "Descrição", "Categoria", "Valor (R$)"]]
+
     for d in despesas:
         valor = d["valor"] or 0
         dados.append([
@@ -254,21 +293,21 @@ def exportar_pdf():
             d["categoria"],
             f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         ])
+
     dados.append(["", "", "Total Geral", f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")])
 
-    tabela = Table(dados, colWidths=[3*cm, 6*cm, 4*cm, 3*cm])
+    tabela = Table(dados, colWidths=[3*cm, 7*cm, 3*cm, 3*cm])
     tabela.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.darkgreen),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#374151")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("BACKGROUND", (0, 1), (-1, -2), colors.whitesmoke),
+        ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
+        ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#e5e7eb")),
         ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-        ("BACKGROUND", (0, -1), (-1, -1), colors.lightgrey),
     ]))
 
     elementos.append(tabela)
+
     pdf.build(elementos)
 
     buffer.seek(0)
@@ -278,6 +317,9 @@ def exportar_pdf():
     return response
 
 
+# -------------------------------
+# ADICIONAR DESPESA
+# -------------------------------
 @app.route("/adicionar", methods=["POST"])
 def adicionar():
     if "usuario_id" not in session:
@@ -286,11 +328,11 @@ def adicionar():
     data = request.form.get("data", "").strip()
     descricao = request.form.get("descricao", "").strip()
     categoria = request.form.get("categoria", "").strip()
-
     valor_str = request.form.get("valor", "").strip()
+
     try:
-        valor = float(valor_str) if valor_str else 0.0
-    except ValueError:
+        valor = float(valor_str)
+    except:
         valor = 0.0
 
     usuario_id = session["usuario_id"]
@@ -307,6 +349,9 @@ def adicionar():
     return redirect(url_for("index"))
 
 
+# -------------------------------
+# EDITAR DESPESA
+# -------------------------------
 @app.route("/editar/<int:id>", methods=["POST"])
 def editar(id):
     if "usuario_id" not in session:
@@ -315,17 +360,18 @@ def editar(id):
     data = request.form.get("data", "").strip()
     descricao = request.form.get("descricao", "").strip()
     categoria = request.form.get("categoria", "").strip()
-
     valor_str = request.form.get("valor", "").strip()
+
     try:
-        valor = float(valor_str) if valor_str else 0.0
-    except ValueError:
+        valor = float(valor_str)
+    except:
         valor = 0.0
 
     conn = sqlite3.connect("despesas.db")
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE despesas SET data = ?, descricao = ?, categoria = ?, valor = ? WHERE id = ? AND usuario_id = ?",
+        "UPDATE despesas SET data = ?, descricao = ?, categoria = ?, valor = ? "
+        "WHERE id = ? AND usuario_id = ?",
         (data, descricao, categoria, valor, id, session["usuario_id"]),
     )
     conn.commit()
@@ -334,6 +380,9 @@ def editar(id):
     return redirect(url_for("index"))
 
 
+# -------------------------------
+# DELETAR DESPESA
+# -------------------------------
 @app.route("/deletar/<int:id>", methods=["POST"])
 def deletar(id):
     if "usuario_id" not in session:
@@ -341,13 +390,19 @@ def deletar(id):
 
     conn = sqlite3.connect("despesas.db")
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM despesas WHERE id = ? AND usuario_id = ?", (id, session["usuario_id"]))
+    cursor.execute(
+        "DELETE FROM despesas WHERE id = ? AND usuario_id = ?",
+        (id, session["usuario_id"]),
+    )
     conn.commit()
     conn.close()
 
     return redirect(url_for("index"))
 
 
+# -------------------------------
+# START APP
+# -------------------------------
 if __name__ == "__main__":
     criar_bd()
     app.run(debug=True)
