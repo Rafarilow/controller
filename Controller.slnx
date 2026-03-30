@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Controller.Api/Controller.Api.csproj" />
+    <Project Path="src/Controller.SharedKernel/Controller.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/">
+    <Project Path="src/Modules/Controller.Modules.Expenses/Controller.Modules.Expenses.csproj" />
+    <Project Path="src/Modules/Controller.Modules.Identity/Controller.Modules.Identity.csproj" />
+  </Folder>
+</Solution>

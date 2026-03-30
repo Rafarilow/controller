@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: controller-postgres
+    environment:
+      POSTGRES_DB: controller
+      POSTGRES_USER: controller
+      POSTGRES_PASSWORD: controller_dev_2024
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U controller"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Controller.Api/Dockerfile
+    container_name: controller-api
+    ports:
+      - "5100:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=controller;Username=controller;Password=controller_dev_2024
+      - Jwt__Key=ControllerDevKey2024AtLeast32Characters!
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: src/web
+      dockerfile: Dockerfile
+    container_name: controller-web
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
