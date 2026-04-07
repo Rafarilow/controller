@@ -9,6 +9,8 @@ import ReportsPage from './pages/ReportsPage'
 import ProfilePage from './pages/ProfilePage'
 import TransacoesPage from './pages/TransacoesPage'
 import ConfiguracoesPage from './pages/ConfiguracoesPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import type { ReactNode } from 'react'
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -30,6 +32,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index element={<DashboardPage />} />
             <Route path="transactions" element={<TransacoesPage />} />

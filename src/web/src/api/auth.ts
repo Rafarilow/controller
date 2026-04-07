@@ -15,3 +15,9 @@ export const updateProfile = (nome: string) =>
 
 export const changePassword = (currentPassword: string, newPassword: string) =>
   api.put('/auth/password', { currentPassword, newPassword })
+
+export const forgotPassword = (email: string) =>
+  api.post<{ token: string; message: string }>('/auth/forgot-password', { email })
+
+export const resetPassword = (token: string, newPassword: string) =>
+  api.post('/auth/reset-password', { token, newPassword })

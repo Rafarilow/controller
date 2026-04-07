@@ -19,6 +19,15 @@ public class IdentityRepository : IIdentityRepository
     public async Task AddUserAsync(User user, CancellationToken ct = default)
         => await _context.Users.AddAsync(user, ct);
 
+    public async Task AddResetTokenAsync(PasswordResetToken token, CancellationToken ct = default)
+        => await _context.PasswordResetTokens.AddAsync(token, ct);
+
+    public async Task<PasswordResetToken?> GetResetTokenAsync(string token, CancellationToken ct = default)
+        => await _context.PasswordResetTokens.FirstOrDefaultAsync(t => t.Token == token, ct);
+
+    public void RemoveResetToken(PasswordResetToken token)
+        => _context.PasswordResetTokens.Remove(token);
+
     public async Task SaveChangesAsync(CancellationToken ct = default)
         => await _context.SaveChangesAsync(ct);
 }

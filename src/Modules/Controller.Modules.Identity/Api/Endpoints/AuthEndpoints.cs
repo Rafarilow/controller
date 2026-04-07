@@ -50,6 +50,22 @@ public static class AuthEndpoints
             return result.IsSuccess ? Results.Ok(new { message = "Senha alterada com sucesso" }) : Results.BadRequest(new { error = result.Error });
         }).RequireAuthorization();
 
+        group.MapPost("/forgot-password", async (ForgotPasswordRequest request, IAuthService authService) =>
+        {
+            var result = await authService.ForgotPasswordAsync(request.Email);
+            return result.IsSuccess
+                ? Results.Ok(new { token = result.Value, message = "Token gerado com sucesso. Use-o para redefinir sua senha." })
+                : Results.BadRequest(new { error = result.Error });
+        });
+
+        group.MapPost("/reset-password", async (ResetPasswordRequest request, IAuthService authService) =>
+        {
+            var result = await authService.ResetPasswordAsync(request.Token, request.NewPassword);
+            return result.IsSuccess
+                ? Results.Ok(new { message = "Senha redefinida com sucesso" })
+                : Results.BadRequest(new { error = result.Error });
+        });
+
         return app;
     }
 

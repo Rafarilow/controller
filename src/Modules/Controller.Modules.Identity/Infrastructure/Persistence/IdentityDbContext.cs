@@ -6,6 +6,7 @@ namespace Controller.Modules.Identity.Infrastructure.Persistence;
 public class IdentityDbContext : DbContext
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
 

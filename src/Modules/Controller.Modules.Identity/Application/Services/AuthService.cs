@@ -74,6 +74,40 @@ public class AuthService : IAuthService
         return Result.Success(new UserDto(user.Id, user.Nome, user.Email));
     }
 
+    public async Task<Result<string>> ForgotPasswordAsync(string email)
+    {
+        var user = await _repository.GetUserByEmailAsync(email.ToLowerInvariant());
+        // Always return success to avoid email enumeration — but only generate token if user exists
+        if (user is null)
+            return Result.Success("Se este email estiver cadastrado, um token foi gerado.");
+
+        var resetToken = PasswordResetToken.Create(email);
+        await _repository.AddResetTokenAsync(resetToken);
+        await _repository.SaveChangesAsync();
+
+        return Result.Success(resetToken.Token);
+    }
+
+    public async Task<Result> ResetPasswordAsync(string token, string newPassword)
+    {
+        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            return Result.Failure("A senha deve ter pelo menos 6 caracteres");
+
+        var resetToken = await _repository.GetResetTokenAsync(token);
+        if (resetToken is null || resetToken.IsExpired())
+            return Result.Failure("Token inválido ou expirado");
+
+        var user = await _repository.GetUserByEmailAsync(resetToken.Email);
+        if (user is null)
+            return Result.Failure("Usuário não encontrado");
+
+        user.SetPasswordHash(BCrypt.Net.BCrypt.HashPassword(newPassword));
+        _repository.RemoveResetToken(resetToken);
+        await _repository.SaveChangesAsync();
+
+        return Result.Success();
+    }
+
     public async Task<Result> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
     {
         if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)

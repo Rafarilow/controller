@@ -6,3 +6,5 @@ public record AuthResponse(string Token, UserDto User);
 public record UserDto(Guid Id, string Nome, string Email);
 public record UpdateProfileRequest(string Nome);
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+public record ForgotPasswordRequest(string Email);
+public record ResetPasswordRequest(string Token, string NewPassword);

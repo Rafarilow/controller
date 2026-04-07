@@ -7,5 +7,8 @@ public interface IIdentityRepository
     Task<User?> GetUserByIdAsync(Guid id, CancellationToken ct = default);
     Task<User?> GetUserByEmailAsync(string email, CancellationToken ct = default);
     Task AddUserAsync(User user, CancellationToken ct = default);
+    Task AddResetTokenAsync(PasswordResetToken token, CancellationToken ct = default);
+    Task<PasswordResetToken?> GetResetTokenAsync(string token, CancellationToken ct = default);
+    void RemoveResetToken(PasswordResetToken token);
     Task SaveChangesAsync(CancellationToken ct = default);
 }
