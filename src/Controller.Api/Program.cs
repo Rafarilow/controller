@@ -3,9 +3,11 @@ using System.Text.Json.Serialization;
 using Controller.Api.Middleware;
 using Controller.Modules.Expenses;
 using Controller.Modules.Expenses.Api.Endpoints;
+using Controller.Modules.Expenses.Application.Interfaces;
 using Controller.Modules.Expenses.Infrastructure.Persistence;
 using Controller.Modules.Identity;
 using Controller.Modules.Identity.Api.Endpoints;
+using Controller.Modules.Identity.Domain.Entities;
 using Controller.Modules.Identity.Infrastructure.Persistence;
 using Controller.SharedKernel.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -90,6 +92,11 @@ app.MapAuthEndpoints();
 app.MapExpenseEndpoints();
 app.MapReceitaEndpoints();
 app.MapCategoryEndpoints();
+app.MapRecurringEndpoints();
+app.MapBudgetEndpoints();
+app.MapAccountEndpoints();
+app.MapGoalEndpoints();
+app.MapReportEndpoints();
 
 // ── Auto-Migrate ───────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
@@ -99,6 +106,25 @@ using (var scope = app.Services.CreateScope())
 
     var expensesDb = scope.ServiceProvider.GetRequiredService<ExpensesDbContext>();
     await expensesDb.Database.MigrateAsync();
+
+    // ── Seed default dev user ──────────────────────────────
+    const string seedEmail = "rafael.coura1@gmail.com";
+    const string seedPassword = "rafa211700";
+    const string seedNome = "Rafael";
+
+    if (!await identityDb.Users.AnyAsync(u => u.Email == seedEmail))
+    {
+        var seedUser = User.Create(seedNome, seedEmail, BCrypt.Net.BCrypt.HashPassword(seedPassword));
+        identityDb.Users.Add(seedUser);
+        await identityDb.SaveChangesAsync();
+        app.Logger.LogInformation("Seed user '{Email}' created.", seedEmail);
+    }
+
+    // ── Materialize recurring transactions ────────────────
+    var recurringService = scope.ServiceProvider.GetRequiredService<IRecurringService>();
+    var generated = await recurringService.MaterializeAllAsync(DateOnly.FromDateTime(DateTime.UtcNow));
+    if (generated > 0)
+        app.Logger.LogInformation("Materialized {Count} recurring transaction occurrence(s).", generated);
 }
 
 app.Run();

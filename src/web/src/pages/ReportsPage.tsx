@@ -1,17 +1,20 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js'
-import { Doughnut, Bar } from 'react-chartjs-2'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Filler } from 'chart.js'
+import { Doughnut, Bar, Line } from 'react-chartjs-2'
 import { getReport, exportPdf } from '../api/expenses'
-import { Download, TrendingUp, TrendingDown, PieChart, Wallet, Calendar, ArrowUpRight } from 'lucide-react'
-import type { ReportData } from '../types'
+import { getCashflow, getProjection } from '../api/reports'
+import { Download, TrendingUp, TrendingDown, PieChart, Wallet, Calendar, ArrowUpRight, Activity, Sparkles } from 'lucide-react'
+import type { ReportData, CashflowResponse, ProjectionResponse } from '../types'
 import PeriodFilter, { PRESETS, type PeriodRange } from '../components/PeriodFilter'
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement)
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Filler)
 
 const CHART_COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f97316', '#ef4444', '#22c55e', '#0ea5e9', '#9333ea']
 
 export default function ReportsPage() {
   const [report, setReport] = useState<ReportData | null>(null)
+  const [cashflow, setCashflow] = useState<CashflowResponse | null>(null)
+  const [projection, setProjection] = useState<ProjectionResponse | null>(null)
   const [period, setPeriod] = useState<PeriodRange>(PRESETS[6]) // "Tudo" default for reports
 
   const loadReport = useCallback(() => {
@@ -19,6 +22,11 @@ export default function ReportsPage() {
   }, [period])
 
   useEffect(() => { loadReport() }, [loadReport])
+
+  useEffect(() => {
+    getCashflow(12).then(res => setCashflow(res.data)).catch(() => {})
+    getProjection().then(res => setProjection(res.data)).catch(() => {})
+  }, [])
 
   if (!report) return <div className="text-center py-20 text-gray-400 dark:text-gray-600">Carregando...</div>
 
@@ -208,6 +216,94 @@ export default function ReportsPage() {
             <div className="h-40 flex items-center justify-center text-gray-400 dark:text-gray-600 text-sm">
               Sem despesas no período
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* Cashflow line chart + Projection card */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-8 p-5 sm:p-6 rounded-xl bg-white dark:bg-[#101018] border border-gray-200 dark:border-white/10 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                <Activity size={16} className="text-emerald-500" /> Fluxo de Caixa (12 meses)
+              </h3>
+              <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5 font-medium">Evolução do saldo nos últimos meses</p>
+            </div>
+          </div>
+          <div className="h-[260px]">
+            {cashflow && cashflow.items.length > 0 ? (
+              <Line data={{
+                labels: cashflow.items.map(i => {
+                  const [y, mo] = i.mes.split('-').map(Number)
+                  return new Date(y, mo - 1).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
+                }),
+                datasets: [
+                  {
+                    label: 'Receitas',
+                    data: cashflow.items.map(i => i.receitas),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                  },
+                  {
+                    label: 'Despesas',
+                    data: cashflow.items.map(i => i.despesas),
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                  },
+                  {
+                    label: 'Saldo',
+                    data: cashflow.items.map(i => i.saldo),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                  },
+                ]
+              }} options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                scales: {
+                  y: { beginAtZero: false, grid: { color: 'rgba(128,128,128,0.06)' }, ticks: { font: { size: 11 }, color: '#9ca3af' }, border: { display: false } },
+                  x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' as const }, color: '#9ca3af' }, border: { display: false } }
+                },
+                plugins: {
+                  legend: { display: true, position: 'top', labels: { font: { size: 11 }, color: '#9ca3af', boxWidth: 10, boxHeight: 10 } },
+                  tooltip: { backgroundColor: '#1a1a24', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 10, cornerRadius: 8 }
+                }
+              }} />
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-600 text-sm">Carregando...</div>
+            )}
+          </div>
+        </div>
+        <div className="lg:col-span-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-blue-500/10 to-indigo-500/5 border border-blue-500/20 shadow-sm">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white tracking-tight flex items-center gap-2 mb-4">
+            <Sparkles size={16} className="text-blue-500" /> Projeção do Próximo Mês
+          </h3>
+          {projection ? (
+            <div className="space-y-4">
+              <div>
+                <p className="text-[11px] text-gray-500 uppercase tracking-wider font-medium">Receita prevista</p>
+                <p className="text-xl font-bold text-emerald-500 mt-1">{fmt(projection.receitaPrevista)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] text-gray-500 uppercase tracking-wider font-medium">Despesa prevista</p>
+                <p className="text-xl font-bold text-red-500 mt-1">{fmt(projection.despesaPrevista)}</p>
+              </div>
+              <div className="pt-3 border-t border-gray-200 dark:border-white/10">
+                <p className="text-[11px] text-gray-500 uppercase tracking-wider font-medium">Saldo previsto</p>
+                <p className={`text-2xl font-bold mt-1 ${projection.saldoPrevisto >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{fmt(projection.saldoPrevisto)}</p>
+              </div>
+              <p className="text-[10px] text-gray-400">Baseado em {projection.lancamentosAtivos} lançamento(s) recorrente(s) ativo(s)</p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">Carregando projeção...</p>
           )}
         </div>
       </div>

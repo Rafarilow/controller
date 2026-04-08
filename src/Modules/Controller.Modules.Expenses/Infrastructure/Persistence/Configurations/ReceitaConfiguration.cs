@@ -17,6 +17,12 @@ public class ReceitaConfiguration : IEntityTypeConfiguration<Receita>
         builder.Property(r => r.Tipo).HasMaxLength(20).IsRequired();
         builder.Property(r => r.UsuarioId).IsRequired();
         builder.HasIndex(r => r.UsuarioId);
+        builder.Property(r => r.OrigemRecorrenteId);
+        builder.Property(r => r.AccountId);
+        builder.HasIndex(r => r.AccountId);
+        builder.HasIndex(r => new { r.OrigemRecorrenteId, r.Data })
+            .HasFilter("\"OrigemRecorrenteId\" IS NOT NULL")
+            .IsUnique();
         builder.Property(r => r.CreatedAt).HasDefaultValueSql("now()");
     }
 }

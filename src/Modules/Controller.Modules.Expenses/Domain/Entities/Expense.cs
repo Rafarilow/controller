@@ -9,10 +9,12 @@ public class Expense : Entity
     public string Categoria { get; private set; } = null!;
     public decimal Valor { get; private set; }
     public Guid UsuarioId { get; private set; }
+    public Guid? OrigemRecorrenteId { get; private set; }
+    public Guid? AccountId { get; private set; }
 
     private Expense() { }
 
-    public static Expense Create(DateOnly data, string descricao, string categoria, decimal valor, Guid usuarioId)
+    public static Expense Create(DateOnly data, string descricao, string categoria, decimal valor, Guid usuarioId, Guid? origemRecorrenteId = null, Guid? accountId = null)
     {
         return new Expense
         {
@@ -20,8 +22,16 @@ public class Expense : Entity
             Descricao = descricao,
             Categoria = categoria,
             Valor = valor,
-            UsuarioId = usuarioId
+            UsuarioId = usuarioId,
+            OrigemRecorrenteId = origemRecorrenteId,
+            AccountId = accountId
         };
+    }
+
+    public void SetAccount(Guid? accountId)
+    {
+        AccountId = accountId;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void Update(DateOnly data, string descricao, string categoria, decimal valor)

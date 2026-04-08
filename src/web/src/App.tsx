@@ -9,6 +9,11 @@ import ReportsPage from './pages/ReportsPage'
 import ProfilePage from './pages/ProfilePage'
 import TransacoesPage from './pages/TransacoesPage'
 import ConfiguracoesPage from './pages/ConfiguracoesPage'
+import RecorrentesPage from './pages/RecorrentesPage'
+import OrcamentosPage from './pages/OrcamentosPage'
+import ContasPage from './pages/ContasPage'
+import MetasPage from './pages/MetasPage'
+import CalendarioPage from './pages/CalendarioPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import type { ReactNode } from 'react'
@@ -37,6 +42,11 @@ export default function App() {
           <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index element={<DashboardPage />} />
             <Route path="transactions" element={<TransacoesPage />} />
+            <Route path="recurring" element={<RecorrentesPage />} />
+            <Route path="budgets" element={<OrcamentosPage />} />
+            <Route path="accounts" element={<ContasPage />} />
+            <Route path="goals" element={<MetasPage />} />
+            <Route path="calendar" element={<CalendarioPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="settings" element={<ConfiguracoesPage />} />

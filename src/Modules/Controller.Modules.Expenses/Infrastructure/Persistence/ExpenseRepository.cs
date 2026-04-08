@@ -92,6 +92,92 @@ public class ExpenseRepository : IExpenseRepository
     public void RemoveCategory(UserCategory category)
         => _context.UserCategories.Remove(category);
 
+    // Recurring Transactions
+    public async Task<List<RecurringTransaction>> GetRecurringByUserAsync(Guid userId, bool? ativo = null, CancellationToken ct = default)
+    {
+        var q = _context.RecurringTransactions.Where(r => r.UsuarioId == userId);
+        if (ativo.HasValue) q = q.Where(r => r.Ativo == ativo.Value);
+        return await q.OrderByDescending(r => r.CreatedAt).ToListAsync(ct);
+    }
+
+    public async Task<List<RecurringTransaction>> GetAllActiveRecurringAsync(CancellationToken ct = default)
+        => await _context.RecurringTransactions.Where(r => r.Ativo).ToListAsync(ct);
+
+    public async Task<RecurringTransaction?> GetRecurringByIdAndUserAsync(Guid id, Guid userId, CancellationToken ct = default)
+        => await _context.RecurringTransactions.FirstOrDefaultAsync(r => r.Id == id && r.UsuarioId == userId, ct);
+
+    public async Task AddRecurringAsync(RecurringTransaction recurring, CancellationToken ct = default)
+        => await _context.RecurringTransactions.AddAsync(recurring, ct);
+
+    public void RemoveRecurring(RecurringTransaction recurring)
+        => _context.RecurringTransactions.Remove(recurring);
+
+    public async Task<HashSet<DateOnly>> GetExistingRecurringDatesAsync(Guid recurringId, string tipo, CancellationToken ct = default)
+    {
+        if (tipo == "Despesa")
+        {
+            var dates = await _context.Expenses
+                .Where(e => e.OrigemRecorrenteId == recurringId)
+                .Select(e => e.Data)
+                .ToListAsync(ct);
+            return dates.ToHashSet();
+        }
+        else
+        {
+            var dates = await _context.Receitas
+                .Where(r => r.OrigemRecorrenteId == recurringId)
+                .Select(r => r.Data)
+                .ToListAsync(ct);
+            return dates.ToHashSet();
+        }
+    }
+
+    // Budgets
+    public async Task<List<Budget>> GetBudgetsByUserAsync(Guid userId, CancellationToken ct = default)
+        => await _context.Budgets.Where(b => b.UsuarioId == userId).OrderBy(b => b.Categoria).ToListAsync(ct);
+
+    public async Task<Budget?> GetBudgetByIdAndUserAsync(Guid id, Guid userId, CancellationToken ct = default)
+        => await _context.Budgets.FirstOrDefaultAsync(b => b.Id == id && b.UsuarioId == userId, ct);
+
+    public async Task AddBudgetAsync(Budget budget, CancellationToken ct = default)
+        => await _context.Budgets.AddAsync(budget, ct);
+
+    public void RemoveBudget(Budget budget)
+        => _context.Budgets.Remove(budget);
+
+    // Accounts
+    public async Task<List<Account>> GetAccountsByUserAsync(Guid userId, CancellationToken ct = default)
+        => await _context.Accounts.Where(a => a.UsuarioId == userId).OrderByDescending(a => a.Ativo).ThenBy(a => a.Nome).ToListAsync(ct);
+
+    public async Task<Account?> GetAccountByIdAndUserAsync(Guid id, Guid userId, CancellationToken ct = default)
+        => await _context.Accounts.FirstOrDefaultAsync(a => a.Id == id && a.UsuarioId == userId, ct);
+
+    public async Task AddAccountAsync(Account account, CancellationToken ct = default)
+        => await _context.Accounts.AddAsync(account, ct);
+
+    public void RemoveAccount(Account account)
+        => _context.Accounts.Remove(account);
+
+    public async Task<decimal> GetSumByAccountAsync(Guid accountId, string tipo, CancellationToken ct = default)
+    {
+        if (tipo == "Despesa")
+            return await _context.Expenses.Where(e => e.AccountId == accountId).SumAsync(e => e.Valor, ct);
+        return await _context.Receitas.Where(r => r.AccountId == accountId).SumAsync(r => r.Valor, ct);
+    }
+
+    // Goals
+    public async Task<List<Goal>> GetGoalsByUserAsync(Guid userId, CancellationToken ct = default)
+        => await _context.Goals.Where(g => g.UsuarioId == userId).OrderByDescending(g => g.CreatedAt).ToListAsync(ct);
+
+    public async Task<Goal?> GetGoalByIdAndUserAsync(Guid id, Guid userId, CancellationToken ct = default)
+        => await _context.Goals.FirstOrDefaultAsync(g => g.Id == id && g.UsuarioId == userId, ct);
+
+    public async Task AddGoalAsync(Goal goal, CancellationToken ct = default)
+        => await _context.Goals.AddAsync(goal, ct);
+
+    public void RemoveGoal(Goal goal)
+        => _context.Goals.Remove(goal);
+
     public async Task SaveChangesAsync(CancellationToken ct = default)
         => await _context.SaveChangesAsync(ct);
 }

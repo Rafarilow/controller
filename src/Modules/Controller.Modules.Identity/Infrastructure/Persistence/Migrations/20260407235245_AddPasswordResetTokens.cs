@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -37,7 +37,8 @@ namespace Controller.Modules.Identity.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "password_reset_tokens");
+            migrationBuilder.DropTable(
+                name: "password_reset_tokens");
         }
     }
 }

@@ -20,5 +20,10 @@ public class ExpensesModule : IModuleInitializer
 
         services.AddScoped<IExpenseRepository, ExpenseRepository>();
         services.AddScoped<IExpenseService, ExpenseService>();
+        services.AddScoped<IRecurringService, RecurringService>();
+        services.AddScoped<IBudgetService, BudgetService>();
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IGoalService, GoalService>();
+        services.AddScoped<IReportsService, ReportsService>();
     }
 }

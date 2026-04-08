@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { Home, BarChart3, LogOut, Sun, Moon, Menu, X, Settings, ChevronLeft, ChevronRight, User, ArrowLeftRight } from 'lucide-react'
+import { Home, BarChart3, LogOut, Sun, Moon, Menu, X, Settings, ChevronLeft, ChevronRight, User, ArrowLeftRight, Repeat, Target, Wallet, Trophy, Calendar } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useState, useRef, useEffect } from 'react'
@@ -7,6 +7,11 @@ import { useState, useRef, useEffect } from 'react'
 const NAV_ITEMS = [
   { to: '/', icon: Home, label: 'Dashboard', end: true },
   { to: '/transactions', icon: ArrowLeftRight, label: 'Transações', end: false },
+  { to: '/recurring', icon: Repeat, label: 'Lançamentos Fixos', end: false },
+  { to: '/budgets', icon: Target, label: 'Orçamentos', end: false },
+  { to: '/accounts', icon: Wallet, label: 'Contas', end: false },
+  { to: '/goals', icon: Trophy, label: 'Metas', end: false },
+  { to: '/calendar', icon: Calendar, label: 'Calendário', end: false },
   { to: '/reports', icon: BarChart3, label: 'Relatórios', end: false },
   { to: '/settings', icon: Settings, label: 'Configurações', end: false },
 ]

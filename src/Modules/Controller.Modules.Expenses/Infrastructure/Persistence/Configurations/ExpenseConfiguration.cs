@@ -16,6 +16,12 @@ public class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
         builder.Property(e => e.Valor).HasColumnType("numeric(18,2)").IsRequired();
         builder.Property(e => e.UsuarioId).IsRequired();
         builder.HasIndex(e => e.UsuarioId);
+        builder.Property(e => e.OrigemRecorrenteId);
+        builder.Property(e => e.AccountId);
+        builder.HasIndex(e => e.AccountId);
+        builder.HasIndex(e => new { e.OrigemRecorrenteId, e.Data })
+            .HasFilter("\"OrigemRecorrenteId\" IS NOT NULL")
+            .IsUnique();
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
     }
 }
